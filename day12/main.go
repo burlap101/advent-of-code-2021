@@ -137,7 +137,7 @@ func (s *State) TraverseGraph(currentVertex *Vertex, currentPathString string) (
 	currentPath.SortSteps()
 	for _, v := range currentVertex.nextHops {
 		isHopOnPathAlready := strings.Contains(currentPathString, "," + v.name + ",")
-		if v.isBig || !isHopOnPathAlready {
+		if v.isBig || (isHopOnPathAlready && !currentPath.LittleCaveVisitedTwice()) || !isHopOnPathAlready {
 			newPathStr := currentPathString + v.name
 			if v.name != "end" {
 				newPathStr += ","
@@ -158,6 +158,20 @@ func (s *State) TraverseGraph(currentVertex *Vertex, currentPathString string) (
 	return nil
 }
 
+func (p Path) LittleCaveVisitedTwice() bool {
+	namesVisits := make(map[string]int)
+	for _, v := range p.steps {
+		if _, ok := namesVisits[v.name]; !ok {
+			namesVisits[v.name] = 0
+		}
+		namesVisits[v.name] += 1
+		if !v.isBig && namesVisits[v.name] == 2 {
+			return true
+		}
+	}
+	return false
+}
+
 func (p *Path) SortSteps() {
 	sort.Slice(p.steps, func(i, j int) bool { return p.steps[i].name < p.steps[j].name})
 }
@@ -176,5 +190,5 @@ func main() {
 		panic(err)
 	}
 	fmt.Println(state)
-	fmt.Println("Part 1 Answer:", pathCount)
+	fmt.Println("Part 2 Answer:", pathCount)
 }
